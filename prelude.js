@@ -244,3 +244,16 @@ function polarToCartesian(r, theta) {
 function pointAlong(vector1, vector2, proportion) {
   return add(vector1, scale(subtract(vector2, vector1), proportion));
 }
+
+/**
+ * Draws a polygon defined by a list of points using the provided pen.
+ * @param {Object} pen - The drawing pen (call draw())
+ * @param {number[][]} points - Array of points defining the polygon
+ */
+function drawPoints(pen, points) {
+  let s = pen.movePointerTo(points[0]);
+  for (let i = 1; i < points.length; i++) {
+    s = s.lineTo(points[i]);
+  }
+  s.close();
+}
