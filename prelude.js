@@ -68,6 +68,98 @@ class RNG {
     } while (p > L);
     return k - 1;
   }
+
+  /**
+   * Generates points using Poisson disc sampling (Bridson's algorithm).
+   * Creates evenly-spaced random points with a minimum distance constraint.
+   * @param {number} width - Width of the sampling area
+   * @param {number} height - Height of the sampling area
+   * @param {number} radius - Minimum distance between points
+   * @param {number} [k=30] - Number of attempts before rejecting a point
+   * @returns {number[][]} Array of [x, y] points
+   */
+  poissonDisc(width, height, radius, k = 30) {
+    const cellSize = radius / Math.sqrt(2);
+    const gridWidth = Math.ceil(width / cellSize);
+    const gridHeight = Math.ceil(height / cellSize);
+    const grid = new Array(gridWidth * gridHeight).fill(null);
+    const points = [];
+    const active = [];
+
+    // Helper to convert point to grid coordinates
+    const gridIndex = (x, y) => {
+      const i = Math.floor(x / cellSize);
+      const j = Math.floor(y / cellSize);
+      return i + j * gridWidth;
+    };
+
+    // Helper to check if a point is valid
+    const isValid = (x, y) => {
+      if (x < 0 || x >= width || y < 0 || y >= height) return false;
+
+      const i = Math.floor(x / cellSize);
+      const j = Math.floor(y / cellSize);
+
+      // Check neighboring cells
+      const i0 = Math.max(i - 2, 0);
+      const i1 = Math.min(i + 3, gridWidth);
+      const j0 = Math.max(j - 2, 0);
+      const j1 = Math.min(j + 3, gridHeight);
+
+      for (let jj = j0; jj < j1; jj++) {
+        for (let ii = i0; ii < i1; ii++) {
+          const neighbor = grid[ii + jj * gridWidth];
+          if (neighbor !== null) {
+            const [nx, ny] = points[neighbor];
+            const dx = x - nx;
+            const dy = y - ny;
+            const distSq = dx * dx + dy * dy;
+            if (distSq < radius * radius) return false;
+          }
+        }
+      }
+
+      return true;
+    };
+
+    // Add initial point
+    const x0 = this.uniform() * width;
+    const y0 = this.uniform() * height;
+    const idx0 = 0;
+    grid[gridIndex(x0, y0)] = idx0;
+    points.push([x0, y0]);
+    active.push(idx0);
+
+    // Generate points
+    while (active.length > 0) {
+      const randomIndex = this.uniformInt(0, active.length);
+      const pointIndex = active[randomIndex];
+      const [px, py] = points[pointIndex];
+      let found = false;
+
+      for (let n = 0; n < k; n++) {
+        const angle = this.uniform() * 2 * Math.PI;
+        const r = radius + this.uniform() * radius;
+        const x = px + r * Math.cos(angle);
+        const y = py + r * Math.sin(angle);
+
+        if (isValid(x, y)) {
+          const idx = points.length;
+          grid[gridIndex(x, y)] = idx;
+          points.push([x, y]);
+          active.push(idx);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        active.splice(randomIndex, 1);
+      }
+    }
+
+    return points;
+  }
 }
 
 /**
