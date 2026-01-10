@@ -1,0 +1,15 @@
+{
+  "name": "replicad-prelude",
+  "private": true,
+  "type": "module",
+  "main": "prelude.js",
+  "scripts": {
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

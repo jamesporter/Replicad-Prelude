@@ -2,7 +2,7 @@
  * Replicad Prelude
  */
 
-function fuseAll(shapes) {
+export function fuseAll(shapes) {
   let result = shapes[0];
   shapes.slice(1).forEach((shape) => {
     result = result.fuse(shape);
@@ -10,7 +10,7 @@ function fuseAll(shapes) {
   return result;
 }
 
-function polarCopies(shape, count, radius) {
+export function polarCopies(shape, count, radius) {
   const base = shape.translate(0, radius);
   const angle = 360 / count;
 
@@ -21,7 +21,7 @@ function polarCopies(shape, count, radius) {
   return copies;
 }
 
-class RNG {
+export class RNG {
   /**
    * Creates a new seeded random number generator.
    * @param {number} [seed] - The initial seed.
@@ -191,7 +191,7 @@ class RNG {
  * @param {number[]} otherPoint - Second vector
  * @returns {number[]} The sum of the two vectors
  */
-function add(point, otherPoint) {
+export function add(point, otherPoint) {
   return point.map((value, index) => value + otherPoint[index]);
 }
 
@@ -201,7 +201,7 @@ function add(point, otherPoint) {
  * @param {number[]} otherPoint - Second vector to subtract
  * @returns {number[]} The difference of the two vectors
  */
-function subtract(point, otherPoint) {
+export function subtract(point, otherPoint) {
   return point.map((value, index) => value - otherPoint[index]);
 }
 
@@ -211,7 +211,7 @@ function subtract(point, otherPoint) {
  * @param {number[]} otherVector - Second vector
  * @returns {number} The dot product
  */
-function dotProduct(vector, otherVector) {
+export function dotProduct(vector, otherVector) {
   return vector.reduce(
     (sum, value, index) => sum + value * otherVector[index],
     0
@@ -224,7 +224,7 @@ function dotProduct(vector, otherVector) {
  * @param {number} factor - The scaling factor
  * @returns {number[]} The scaled vector
  */
-function scale(vector, factor) {
+export function scale(vector, factor) {
   return vector.map((value) => value * factor);
 }
 
@@ -233,7 +233,7 @@ function scale(vector, factor) {
  * @param {number[]} vector - The vector
  * @returns {number} The magnitude
  */
-function magnitude(vector) {
+export function magnitude(vector) {
   return Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
 }
 
@@ -242,7 +242,7 @@ function magnitude(vector) {
  * @param {number[]} vector - The vector to normalize
  * @returns {number[]} The normalized vector
  */
-function normalize(vector) {
+export function normalize(vector) {
   const mag = magnitude(vector);
   return mag === 0 ? vector : scale(vector, 1 / mag);
 }
@@ -253,7 +253,7 @@ function normalize(vector) {
  * @param {number} theta - The angle in radians
  * @returns {number[]} [x, y] Cartesian coordinates
  */
-function polarToCartesian(r, theta) {
+export function polarToCartesian(r, theta) {
   return [r * Math.cos(theta), r * Math.sin(theta)];
 }
 
@@ -264,7 +264,7 @@ function polarToCartesian(r, theta) {
  * @param {number} proportion - The proportion along the line (0 = vector1, 1 = vector2)
  * @returns {number[]} The interpolated point
  */
-function pointAlong(vector1, vector2, proportion) {
+export function pointAlong(vector1, vector2, proportion) {
   return add(vector1, scale(subtract(vector2, vector1), proportion));
 }
 
@@ -273,7 +273,7 @@ function pointAlong(vector1, vector2, proportion) {
  * @param {Object} pen - The drawing pen (call draw())
  * @param {number[][]} points - Array of points defining the polygon
  */
-function drawPoints(pen, points) {
+export function drawPoints(pen, points) {
   let s = pen.movePointerTo(points[0]);
   for (let i = 1; i < points.length; i++) {
     s = s.lineTo(points[i]);
