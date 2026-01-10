@@ -257,3 +257,93 @@ function drawPoints(pen, points) {
   }
   s.close();
 }
+
+// Grid Helpers
+
+const cp6 = Math.cos(Math.PI / 6);
+
+/**
+ * Creates a transform function for hexagonal grid coordinates.
+ * Assumes integer grid coordinates.
+ * @param {Object} options - Configuration options
+ * @param {number} options.r - The radius of the hexagon
+ * @param {boolean} [options.vertical=true] - Whether hexagons are vertical (vertex at top)
+ * @returns {function(number[]): number[]} Transform function that converts grid coordinates to world coordinates
+ */
+function hexTransform({ r, vertical = true }) {
+  return ([x, y]) => {
+    if (vertical) {
+      return [
+        y % 2 === 0 ? 2 * r * cp6 * x : (2 * x - 1) * r * cp6,
+        1.5 * y * r,
+      ];
+    } else {
+      return [
+        r * 1.5 * x,
+        x % 2 === 0 ? 2 * r * cp6 * y : (2 * y - 1) * r * cp6,
+      ];
+    }
+  };
+}
+
+/**
+ * Creates a transform function for triangular grid coordinates.
+ * Assumes integer grid coordinates.
+ * @param {number} s - The side length of the triangle
+ * @returns {function(number[]): {at: number[], flipped: boolean}} Transform function that returns center position and orientation
+ */
+function triTransform(s) {
+  const r = s / (2 * Math.sin(Math.PI / 3));
+  const h = (s * 0.5) / Math.tan(Math.PI / 3);
+
+  return ([x, y]) => {
+    const isUp = (x + y) % 2 === 0;
+    if (isUp) {
+      return { at: [0.5 * s * x, (h + r) * y], flipped: false };
+    } else {
+      return { at: [0.5 * s * x, (h + r) * y + h - r], flipped: true };
+    }
+  };
+}
+
+/**
+ * Generates the vertex points of a hexagon.
+ * @param {number[]} center - The center point [x, y] of the hexagon
+ * @param {number} r - The radius of the hexagon
+ * @param {boolean} [vertical=true] - Whether the hexagon is vertical (vertex at top)
+ * @returns {number[][]} Array of 6 points forming the hexagon vertices
+ */
+function hexPoints(center, r, vertical = true) {
+  const [cx, cy] = center;
+  const points = [];
+  const startAngle = vertical ? Math.PI / 6 : 0;
+
+  for (let i = 0; i < 6; i++) {
+    const angle = startAngle + (i * Math.PI) / 3;
+    points.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
+  }
+
+  return points;
+}
+
+/**
+ * Generates the vertex points of a triangle.
+ * @param {Object} transform - The transform object from triTransform
+ * @param {number[]} transform.at - The center point [x, y] of the triangle
+ * @param {boolean} transform.flipped - Whether the triangle is flipped
+ * @param {number} s - The side length of the triangle
+ * @returns {number[][]} Array of 3 points forming the triangle vertices
+ */
+function triPoints({ at, flipped }, s) {
+  const [cx, cy] = at;
+  const r = s / (2 * Math.sin(Math.PI / 3));
+  const points = [];
+  const startAngle = flipped ? Math.PI / 2 : -Math.PI / 2;
+
+  for (let i = 0; i < 3; i++) {
+    const angle = startAngle + (i * 2 * Math.PI) / 3;
+    points.push([cx + r * Math.cos(angle), cy + r * Math.sin(angle)]);
+  }
+
+  return points;
+}
