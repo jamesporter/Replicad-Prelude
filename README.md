@@ -4,6 +4,8 @@ Some basic helpers to use in [Replicad's workbench](https://studio.replicad.xyz/
 
 Copy and paste [preluade.js](./prelude.js) into the code editor for some common stuff. Make things.
 
+## [API Documentation](./docs.md)
+
 ## Plan
 
 - [x] RNG stuff
