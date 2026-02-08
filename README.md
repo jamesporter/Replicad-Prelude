@@ -2,7 +2,7 @@
 
 Some basic helpers to use in [Replicad's workbench](https://studio.replicad.xyz/workbench)
 
-Copy and paste [preluade.js](./prelude.js) into the code editor for some common stuff. Make things.
+Copy and paste [prelude.js](./prelude.js) into the code editor for some common stuff. Make things.
 
 ## [API Documentation](./docs.md)
 
