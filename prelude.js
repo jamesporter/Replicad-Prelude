@@ -10,6 +10,14 @@ export function fuseAll(shapes) {
   return result;
 }
 
+export function cutAll(target, shapes) {
+  let result = target;
+  shapes.forEach((shape) => {
+    result = result.cut(shape);
+  });
+  return result;
+}
+
 export function polarCopies(shape, count, radius) {
   const base = shape.translate(0, radius);
   const angle = 360 / count;
