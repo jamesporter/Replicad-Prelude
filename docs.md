@@ -20,6 +20,21 @@ const merged = fuseAll([box1, box2, box3]);
 
 ---
 
+### `cutAll(target, shapes)`
+
+Cuts an array of shapes out of a target shape by sequentially calling `.cut()` on each one.
+
+- **Parameters:**
+  - `target` — The Replicad shape to cut from
+  - `shapes` — Array of Replicad shapes to cut out of the target
+- **Returns:** The resulting shape after all cuts
+
+```js
+const result = cutAll(block, [hole1, hole2, hole3]);
+```
+
+---
+
 ### `polarCopies(shape, count, radius)`
 
 Creates `count` copies of a shape arranged in a circle. The shape is first translated along the Y axis by `radius`, then each copy is rotated evenly around the origin.

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { fuseAll, polarCopies, drawPoints } from "../prelude.js";
+import { cutAll, fuseAll, polarCopies, drawPoints } from "../prelude.js";
 
 // Mock shape for testing fuseAll
 const createMockShape = (id) => ({
@@ -9,6 +9,14 @@ const createMockShape = (id) => ({
     const result = createMockShape(`${this.id}+${other.id}`);
     result.fusedWith = [...this.fusedWith, other.id];
     return result;
+  },
+});
+
+// Mock shape for testing cutAll
+const createCuttableShape = (id) => ({
+  id,
+  cut(other) {
+    return createCuttableShape(`${this.id}-${other.id}`);
   },
 });
 
@@ -104,6 +112,31 @@ describe("Shape Utilities", () => {
       const result = fuseAll(shapes);
       // Should fuse in order: (1+2)+3
       expect(result.id).toBe("1+2+3");
+    });
+  });
+
+  describe("cutAll", () => {
+    test("returns target unchanged when shapes is empty", () => {
+      const target = createCuttableShape("T");
+      const result = cutAll(target, []);
+      expect(result.id).toBe("T");
+    });
+
+    test("cuts a single shape from the target", () => {
+      const target = createCuttableShape("T");
+      const result = cutAll(target, [createCuttableShape("A")]);
+      expect(result.id).toBe("T-A");
+    });
+
+    test("cuts multiple shapes sequentially", () => {
+      const target = createCuttableShape("T");
+      const shapes = [
+        createCuttableShape("A"),
+        createCuttableShape("B"),
+        createCuttableShape("C"),
+      ];
+      const result = cutAll(target, shapes);
+      expect(result.id).toBe("T-A-B-C");
     });
   });
 
