@@ -13,11 +13,13 @@ Copy and paste [prelude.js](./prelude.js) into the code editor for some common s
 - [x] Poisson Disc
 - [x] Basic helpers as suggested by replicad docs
 - [x] Testing, including GHA
+- [x] (Perlin) Noise
+- [x] Hexagon and triangular grid helpers
 
 ## Future/maybe
 
-- [ ] (Perlin) Noise(?)
-- [ ] Hexagon and triangular grid helpers
+- [ ] Worley/cellular noise
+- [ ] Bezier and spline helpers
 
 # Testing
 

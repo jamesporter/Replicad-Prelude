@@ -156,6 +156,132 @@ const points = rng.poissonDisc(100, 100, 5);
 
 ---
 
+## Noise (Seeded Perlin Noise)
+
+Smooth, continuous pseudorandom values: nearby inputs give nearby outputs. Where `RNG` gives you unrelated jumps, `Noise` gives you gentle drift, which is what you want for organic surfaces, wobbly outlines and natural looking variation. Like `RNG` it is deterministic — the same seed always gives the same field.
+
+### `new Noise(seed?)`
+
+Creates a noise generator.
+
+- **Parameters:**
+  - `seed` *(optional)* — A number, or an existing `RNG` to draw the permutation table from. Omit for a random seed.
+
+```js
+const noise = new Noise(42);
+const shared = new Noise(rng); // reuse an existing RNG
+```
+
+### `noise.noise2D(x, y)`
+
+Samples the 2D noise field. Returns a value in `[-1, 1]`, zero at integer lattice points, and repeating every 256 units.
+
+```js
+noise.noise2D(1.5, 2.5); // e.g. -0.312...
+
+// Wobble the radius of a circle. Sampling the field *around* a circle keeps
+// the wobble seamless where the outline joins back up.
+const points = [];
+for (let i = 0; i < 60; i++) {
+  const theta = (i / 60) * 2 * Math.PI;
+  const r = 20 + 3 * noise.noise2D(2 * Math.cos(theta), 2 * Math.sin(theta));
+  points.push(polarToCartesian(r, theta));
+}
+drawPoints(draw(), points);
+```
+
+### `noise.noise3D(x, y, z)`
+
+Samples the 3D noise field. Returns a value in `[-1, 1]`. Useful for varying something over a volume, or for animating a 2D field by sweeping `z`.
+
+```js
+noise.noise3D(1.5, 2.5, 0.5); // e.g. 0.204...
+```
+
+### `noise.fbm2D(x, y, options?)` / `noise.fbm3D(x, y, z, options?)`
+
+Fractal (fractional Brownian motion) noise: several octaves of noise summed together so the field has both broad shape and fine detail. The result is normalized back into `[-1, 1]`.
+
+- **Parameters:**
+  - `options.octaves` *(default `4`)* — How many layers to sum. More octaves means more fine detail.
+  - `options.persistence` *(default `0.5`)* — How much amplitude each successive octave keeps. Lower is smoother.
+  - `options.lacunarity` *(default `2`)* — How much the frequency grows each octave.
+
+```js
+noise.fbm2D(x, y);                                  // 4 octaves
+noise.fbm2D(x, y, { octaves: 6, persistence: 0.4 }); // rougher, more detail
+noise.fbm3D(x, y, z, { octaves: 2 });
+```
+
+With `octaves: 1` this is identical to plain `noise2D`/`noise3D`.
+
+---
+
+## Grids
+
+Helpers for laying shapes out on a hexagonal or triangular tiling. Both return plain coordinate arrays, so they compose with `drawPoints`, `fuseAll` and `cutAll`.
+
+### `hexGrid(cols, rows, size, options?)`
+
+Generates the centre points of a hexagonal grid. `size` is the circumradius — the distance from the centre of a hexagon to any of its corners — so neighbouring centres end up `√3 × size` apart and the cells tile without gaps.
+
+- **Parameters:**
+  - `cols` — Number of columns
+  - `rows` — Number of rows
+  - `size` — Distance from a hexagon's centre to its corners
+  - `options.orientation` *(default `"pointy"`)* — `"pointy"` for a corner at the top (rows are offset), `"flat"` for a flat edge at the top (columns are offset)
+  - `options.centered` *(default `false`)* — Centre the whole grid on the origin instead of starting at it
+- **Returns:** Array of `[x, y]` centre points
+
+```js
+const centers = hexGrid(5, 5, 10, { centered: true });
+
+// Punch a honeycomb out of a plate
+const holes = centers.map(([x, y]) => drawCircle(8).translate(x, y).sketchOnPlane().extrude(5));
+const plate = cutAll(basePlate, holes);
+```
+
+### `hexPoints(center, size, options?)`
+
+The six corners of a single hexagon, ready to pass to `drawPoints`.
+
+- **Parameters:**
+  - `center` — The `[x, y]` centre of the hexagon
+  - `size` — Distance from the centre to a corner
+  - `options.orientation` *(default `"pointy"`)* — Matches the `hexGrid` orientations
+- **Returns:** Array of six `[x, y]` points
+
+```js
+for (const center of hexGrid(4, 4, 10)) {
+  drawPoints(draw(), hexPoints(center, 9)); // 9 leaves a 1 unit gap between cells
+}
+```
+
+### `triangleGrid(cols, rows, size, options?)`
+
+Generates a grid of equilateral triangles, alternating point up and point down along each row so that they tile the plane. Each triangle is an array of three `[x, y]` points, ready for `drawPoints`.
+
+- **Parameters:**
+  - `cols` — Number of triangles per row
+  - `rows` — Number of rows
+  - `size` — Edge length of each triangle
+  - `options.centered` *(default `false`)* — Centre the whole grid on the origin
+- **Returns:** Array of triangles, each an array of three points
+
+```js
+const triangles = triangleGrid(8, 6, 10, { centered: true });
+
+// Vary each triangle by where it sits in a noise field
+const noise = new Noise(1);
+for (const triangle of triangles) {
+  const [cx, cy] = centroid(triangle);
+  const height = 2 + 3 * (noise.noise2D(cx / 30, cy / 30) + 1);
+  // ...extrude the triangle by height
+}
+```
+
+---
+
 ## Vector Math
 
 All vector functions work with arrays of numbers (`number[]`) and support any dimensionality (2D, 3D, etc.) unless otherwise noted.
@@ -231,4 +357,15 @@ Linearly interpolates between two vectors. At `proportion = 0` returns `vector1`
 
 ```js
 pointAlong([0, 0], [10, 10], 0.5); // [5, 5]
+```
+
+### `centroid(points)`
+
+Returns the average of a list of points — the middle of a polygon. Handy for placing something at the centre of a triangle or hexagon from a grid.
+
+- **Parameters:**
+  - `points` — A non-empty array of points
+
+```js
+centroid([[0, 0], [6, 0], [3, 6]]); // [3, 2]
 ```
